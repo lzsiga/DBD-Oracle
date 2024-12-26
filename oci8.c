@@ -940,6 +940,14 @@ ora_sql_error(imp_sth_t *imp_sth, char *msg)
 		parse_error_offset);
 	msgsv = sv_2mortal(newSVpv(buf,0));
 	sqlsv = sv_2mortal(newSVpv(imp_sth->statement,0));
+
+	{
+		D_imp_dbh_from_sth;
+		int utf8_is_implied = CSFORM_IMPLIES_UTF8(imp_dbh, SQLCS_IMPLICIT);
+		if (utf8_is_implied) {
+			parse_error_offset= sv_pos_u2b_flags(sqlsv, parse_error_offset, NULL, SV_GMAGIC|SV_CONST_RETURN);
+		}
+	}
 	sv_insert(sqlsv, parse_error_offset, 0, "<*>", 3);
 	sv_catsv(msgsv, sqlsv);
 	sv_catpv(msgsv, "'");
